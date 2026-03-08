@@ -1,18 +1,12 @@
-const CACHE_NAME = 'nosso-amor-v1';
+const CACHE_NAME = "nosso-amor-v2";
 
-const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
-  );
+/* instala imediatamente */
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+/* ativa e limpa caches antigos */
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
@@ -24,62 +18,44 @@ self.addEventListener('activate', (event) => {
       )
     )
   );
+
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-
-  if (request.method !== 'GET') return;
-
-  const url = new URL(request.url);
-
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    return;
-  }
+/* estratégia: network first (segura para Vite) */
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
 
-      return fetch(request)
-        .then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200) {
-            return networkResponse;
-          }
-
-          const clone = networkResponse.clone();
-
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, clone);
-          });
-
-          return networkResponse;
-        })
-        .catch(() => {
-          return new Response("Offline", { status: 503 });
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, clone);
         });
-    })
+
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close()
+/* clique em notificação */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-
-        for (const client of clientList) {
-          if ('focus' in client) {
-            return client.focus()
-          }
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) {
+          return client.focus();
         }
+      }
 
-        if (clients.openWindow) {
-          return clients.openWindow('/')
-        }
-      })
-  )
+      if (clients.openWindow) {
+        return clients.openWindow("/");
+      }
+    })
+  );
 });

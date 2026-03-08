@@ -15,13 +15,19 @@
       Lembre com carinho dos nossos momentos. Cada acerto revela uma palavra da frase secreta.
     </p>
 
-    <ChallengeCard v-if="todayChallenge" :challenge="todayChallenge" :is-available="isTodayAvailable"
-      @correct="onCorrect" />
+    <!-- BOTÕES DOS DESAFIOS -->
+    <div class="challenge-list">
+      <button v-for="challenge in availableChallenges" :key="challenge.dateKey" class="challenge-btn" :class="{
+        locked: !challenge.unlocked,
+        active: challenge.index === currentChallengeIndex
+      }" @click="openChallenge(challenge.index)">
+        Dia {{ challenge.index + 1 }}
+      </button>
+    </div>
 
-    <p v-else class="no-challenge">
-      Os desafios começam no dia
-      <strong>08/03/2026</strong>. Prometo que a espera vai valer a pena. 💖
-    </p>
+    <LoveTimeline :items="timelineItems" @select="openChallenge" />
+    <ChallengeCard :key="selectedChallenge.dateKey" :challenge="selectedChallenge"
+      :is-available="selectedChallenge.unlocked" @correct="onCorrect" @next="goNext" />
 
     <transition name="fade-up">
       <div v-if="discoveredWords.length" class="words-card">
@@ -46,41 +52,77 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import ChallengeCard from '../components/ChallengeCard.vue'
-import { challenges } from '../data/challenges'
+import { computed, onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
+import ChallengeCard from "../components/ChallengeCard.vue"
+import LoveTimeline from "../components/LoveTimeline.vue"
+import { challenges } from "../data/challenges"
 
 const router = useRouter()
 
 const discoveredWords = ref<string[]>([])
+const currentChallengeIndex = ref(0)
 
-const todayKey = computed(() => {
+const goNext = () => {
+  const next = currentChallengeIndex.value + 1
+
+  if (next < challenges.length) {
+    currentChallengeIndex.value = next
+  }
+}
+
+const timelineItems = computed(() => {
   const now = new Date()
 
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const d = String(now.getDate()).padStart(2, '0')
+  return challenges.map((challenge, index) => {
+    const challengeDate = new Date(challenge.dateKey + "T00:00:00")
 
-  return `${y}-${m}-${d}`
+    const unlocked = now >= challengeDate
+
+    const done = discoveredWords.value.includes(
+      challenge.passwordWord
+    )
+
+    return {
+      ...challenge,
+      index,
+      unlocked,
+      done
+    }
+  })
 })
 
-const todayChallenge = computed(() => {
-  return challenges.find(
-    (c) => c.dateKey === todayKey.value
-  )
-})
-
-const isTodayAvailable = computed(() => {
-  if (!todayChallenge.value) return false
-
+const availableChallenges = computed(() => {
   const now = new Date()
-  const challengeDate = new Date(
-    todayChallenge.value.dateKey + 'T00:00:00'
-  )
 
-  return now.getTime() >= challengeDate.getTime()
+  return challenges.map((challenge, index) => {
+    const challengeDate = new Date(challenge.dateKey + "T00:00:00")
+
+    const dayUnlocked = now >= challengeDate
+
+    const previousSolved =
+      index === 0 ||
+      discoveredWords.value.includes(challenges[index - 1].passwordWord)
+
+    return {
+      ...challenge,
+      unlocked: dayUnlocked && previousSolved,
+      index
+    }
+  })
 })
+
+const selectedChallenge = computed(() => {
+  return availableChallenges.value[currentChallengeIndex.value]
+})
+
+const openChallenge = (index: number) => {
+  const challenge = availableChallenges.value[index]
+
+  if (!challenge.unlocked) return
+
+  currentChallengeIndex.value = index
+}
 
 const canOpenFinal = computed(() => {
   return discoveredWords.value.length === challenges.length
@@ -91,22 +133,22 @@ const onCorrect = (word: string) => {
     discoveredWords.value.push(word)
 
     localStorage.setItem(
-      'nosso-amor-words',
+      "nosso-amor-words",
       JSON.stringify(discoveredWords.value)
     )
   }
 }
 
 const goHome = () => {
-  router.push({ name: 'home' })
+  router.push({ name: "home" })
 }
 
 const goToFinal = () => {
-  router.push({ name: 'final' })
+  router.push({ name: "final" })
 }
 
 onMounted(() => {
-  const saved = localStorage.getItem('nosso-amor-words')
+  const saved = localStorage.getItem("nosso-amor-words")
 
   if (saved) {
     try {
@@ -143,30 +185,30 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.eyebrow {
-  margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #c75b8a;
+.challenge-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 12px;
 }
 
-h2 {
-  margin: 0.1rem 0 0;
-  font-size: 1.3rem;
-  color: #b2185c;
+.challenge-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #ffe5ec;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
-.hint {
-  margin: 0 0 0.9rem;
-  font-size: 0.88rem;
-  color: #7c3356;
+.challenge-btn.active {
+  background: #ff4d6d;
+  color: white;
 }
 
-.no-challenge {
-  margin-top: 1rem;
-  font-size: 0.92rem;
-  color: #7c3356;
+.challenge-btn.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .words-card {
@@ -175,18 +217,6 @@ h2 {
   border-radius: 1.1rem;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 14px 30px rgba(178, 24, 92, 0.3);
-}
-
-.label {
-  margin: 0 0 0.4rem;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #c75b8a;
-}
-
-.words {
-  margin: 0 0 0.3rem;
 }
 
 .word {
@@ -201,12 +231,6 @@ h2 {
   color: #b2185c;
 }
 
-.tip {
-  margin: 0;
-  font-size: 0.78rem;
-  color: #7c3356;
-}
-
 .final-btn {
   width: 100%;
   margin-top: 1.2rem;
@@ -219,22 +243,5 @@ h2 {
   font-weight: 600;
   box-shadow: 0 16px 36px rgba(201, 24, 74, 0.65);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.final-btn:active {
-  transform: translateY(1px) scale(0.98);
-  box-shadow: 0 10px 24px rgba(201, 24, 74, 0.6);
-}
-
-.fade-up-enter-active,
-.fade-up-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.fade-up-enter-from,
-.fade-up-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
 }
 </style>

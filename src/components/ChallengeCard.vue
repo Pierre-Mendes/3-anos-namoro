@@ -34,10 +34,15 @@
     <transition name="fade-up">
       <div v-if="isCorrect" class="feedback correct">
         <p>Você acertou! 💜</p>
+
         <p class="password">
           Palavra secreta de hoje:
           <strong>{{ challenge.passwordWord }}</strong>
         </p>
+
+        <button class="next-btn" @click="$emit('next')">
+          Próximo desafio →
+        </button>
       </div>
     </transition>
 
@@ -64,11 +69,21 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'correct', word: string): void
+  (e: 'next'): void
 }>()
 
 const selectedAnswer = ref<string | null>(null)
 const isCorrect = ref(false)
 const showExplosion = ref(false)
+
+watch(
+  () => props.challenge,
+  () => {
+    selectedAnswer.value = null
+    isCorrect.value = false
+    showExplosion.value = false
+  }
+)
 
 const formattedDate = computed(() => {
   const [year, month, day] = props.challenge.dateKey.split('-').map(Number)
@@ -216,5 +231,14 @@ watch(showExplosion, (val) => {
 .fade-up-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+.next-btn {
+  margin-top: 8px;
+  border: none;
+  background: #ff4d6d;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
 }
 </style>
