@@ -4,6 +4,7 @@
       <button class="back-btn" type="button" @click="goHome">
         ←
       </button>
+
       <div class="header-text">
         <p class="eyebrow">Dia de desafio</p>
         <h2>Vamos testar a nossa memória?</h2>
@@ -14,12 +15,8 @@
       Lembre com carinho dos nossos momentos. Cada acerto revela uma palavra da frase secreta.
     </p>
 
-    <ChallengeCard
-      v-if="todayChallenge"
-      :challenge="todayChallenge"
-      :is-available="isTodayAvailable"
-      @correct="onCorrect"
-    />
+    <ChallengeCard v-if="todayChallenge" :challenge="todayChallenge" :is-available="isTodayAvailable"
+      @correct="onCorrect" />
 
     <p v-else class="no-challenge">
       Os desafios começam no dia
@@ -29,12 +26,16 @@
     <transition name="fade-up">
       <div v-if="discoveredWords.length" class="words-card">
         <p class="label">Palavras já descobertas</p>
+
         <p class="words">
           <span v-for="word in discoveredWords" :key="word" class="word">
             {{ word }}
           </span>
         </p>
-        <p class="tip">Guarde essas palavras. Elas serão importantes no final.</p>
+
+        <p class="tip">
+          Guarde essas palavras. Elas serão importantes no final.
+        </p>
       </div>
     </transition>
 
@@ -45,75 +46,78 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import ChallengeCard from '../components/ChallengeCard.vue';
-import { challenges } from '../data/challenges';
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import ChallengeCard from '../components/ChallengeCard.vue'
+import { challenges } from '../data/challenges'
 
-const DEV_MODE = import.meta.env.DEV || new URLSearchParams(window.location.search).get('dev') === 'true'
+const router = useRouter()
 
-const router = useRouter();
-const discoveredWords = ref<string[]>([]);
+const discoveredWords = ref<string[]>([])
 
 const todayKey = computed(() => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-});
+  const now = new Date()
+
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+
+  return `${y}-${m}-${d}`
+})
 
 const todayChallenge = computed(() => {
-  if (DEV_MODE) {
-    return challenges.find(c => c.dateKey === todayKey.value) || challenges[0]
-  }
-
-  return challenges.find((c) => c.dateKey === todayKey.value)
+  return challenges.find(
+    (c) => c.dateKey === todayKey.value
+  )
 })
 
 const isTodayAvailable = computed(() => {
-  if (DEV_MODE) return true
-
   if (!todayChallenge.value) return false
 
   const now = new Date()
-  const challengeDate = new Date(todayChallenge.value.dateKey + 'T00:00:00')
+  const challengeDate = new Date(
+    todayChallenge.value.dateKey + 'T00:00:00'
+  )
 
   return now.getTime() >= challengeDate.getTime()
 })
 
-const onCorrect = (word: string) => {
-  if (!discoveredWords.value.includes(word)) {
-    discoveredWords.value.push(word);
-    localStorage.setItem('nosso-amor-words', JSON.stringify(discoveredWords.value));
-  }
-};
-
-const goHome = () => {
-  router.push({ name: 'home' });
-};
-
-const goToFinal = () => {
-  router.push({ name: 'final' });
-};
-
 const canOpenFinal = computed(() => {
-  if (DEV) return true
-
   return discoveredWords.value.length === challenges.length
 })
 
+const onCorrect = (word: string) => {
+  if (!discoveredWords.value.includes(word)) {
+    discoveredWords.value.push(word)
+
+    localStorage.setItem(
+      'nosso-amor-words',
+      JSON.stringify(discoveredWords.value)
+    )
+  }
+}
+
+const goHome = () => {
+  router.push({ name: 'home' })
+}
+
+const goToFinal = () => {
+  router.push({ name: 'final' })
+}
+
 onMounted(() => {
-  const saved = localStorage.getItem('nosso-amor-words');
+  const saved = localStorage.getItem('nosso-amor-words')
+
   if (saved) {
     try {
-      const parsed = JSON.parse(saved) as string[];
-      discoveredWords.value = parsed;
+      const parsed = JSON.parse(saved) as string[]
+
+      discoveredWords.value = parsed
     } catch {
-      discoveredWords.value = [];
+      discoveredWords.value = []
     }
   }
-});
+})
 </script>
 
 <style scoped>
@@ -234,4 +238,3 @@ h2 {
   transform: translateY(10px);
 }
 </style>
-
