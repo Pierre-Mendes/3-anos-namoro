@@ -6,11 +6,11 @@
 
         <p>Este documento confirma que</p>
 
-        <h2>Pierre Mendes Salatiel</h2>
+        <h2 class="signature">Pierre Mendes Salatiel</h2>
 
         <p>e</p>
 
-        <h2>{{ partner }}</h2>
+        <h2 class="signature">{{ partner }}</h2>
 
         <p>renovaram seu relacionamento com amor.</p>
 
@@ -46,6 +46,13 @@ function download() {
     border: 4px solid #ff8fab;
     text-align: center;
     box-shadow: 0 20px 40px rgba(0, 0, 0, .1);
+}
+
+.signature {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+    color: #4a1430;
+    margin: 1rem 0;
 }
 
 button {

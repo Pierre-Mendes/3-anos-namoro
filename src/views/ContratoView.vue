@@ -14,7 +14,7 @@
         <div class="signatures">
 
             <div class="sig">
-                <span>Pierre Mendes Salatiel</span>
+                <span class="signature">Pierre Mendes Salatiel</span>
                 <small>✔ Assinado</small>
             </div>
 
@@ -22,8 +22,12 @@
 
                 <template v-if="signed">
 
-                    <span>{{ partnerName }}</span>
+                    <span class="signature">{{ partnerName }}</span>
                     <small>✔ Assinado</small>
+                    
+                    <button class="certificate-btn" @click="goToCertificate">
+                        Ver Certificado 🏆
+                    </button>
 
                 </template>
 
@@ -52,13 +56,19 @@
 <script setup lang="ts">
 
 import { ref } from "vue"
+import { useRouter } from "vue-router"
 import HeartExplosion from "/src/components/HeartExplosion.vue"
 import { useRelationshipContract } from "/src/composables/useRelationshipContract"
 
+const router = useRouter()
 const { partnerName, signed, signContract } = useRelationshipContract()
 
 const name = ref("")
 const showHearts = ref(false)
+
+function goToCertificate() {
+    router.push({ name: 'certificado' })
+}
 
 function sign() {
 
@@ -114,5 +124,22 @@ input {
     padding: .5rem;
     border-radius: 8px;
     border: 1px solid #ddd;
+}
+
+.signature {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8rem;
+    color: #4a1430;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.certificate-btn {
+    background: linear-gradient(135deg, #a2d2ff, #bde0fe);
+    color: #023e8a;
+    font-weight: 600;
+    margin-top: 1rem;
+    width: 100%;
+    box-shadow: 0 10px 20px rgba(162, 210, 255, 0.4);
 }
 </style>

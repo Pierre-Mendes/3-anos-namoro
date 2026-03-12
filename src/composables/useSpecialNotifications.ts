@@ -39,4 +39,47 @@ export function useSpecialNotifications() {
 
         markSent("finalNotification");
     }
+
+    // Checking for relationship contract notifications
+    const checkContractStatus = () => {
+        const isSigned = localStorage.getItem("contractSigned") === "true";
+        if (isSigned) return;
+        
+        const now = new Date();
+        const dateStr = now.toLocaleDateString("en-CA"); // YYYY-MM-DD locally
+        
+        // Target date for "today" from context (let's use the local current date strings)
+        // Ensure that around 20h we send the notification
+        const alreadySent20h = alreadySent("contractNotif20h");
+        if (!alreadySent20h && now.getHours() >= 20) {
+            sendNotification(
+                "📜 Seu contrato está disponível!",
+                "Você tem um contrato de renovação para assinar. Acesse agora!",
+            );
+            markSent("contractNotif20h");
+        }
+
+        // Target for "next day" (tomorrow)
+        // We will store the day we sent the first notification and check if day changed
+        const startDay = localStorage.getItem("contractAlertStartDay");
+        if (!startDay) {
+            localStorage.setItem("contractAlertStartDay", dateStr);
+        } else if (startDay !== dateStr) {
+            // It's a new day!
+            const alreadySentTomorrow = alreadySent("contractNotifTomorrow");
+            if (!alreadySentTomorrow) {
+                sendNotification(
+                    "⚠️ Assinatura Pendente!",
+                    "O dia virou e o contrato de renovação ainda não foi assinado! Assine para validar os próximos anos de amor 💜",
+                );
+                markSent("contractNotifTomorrow");
+            }
+        }
+    };
+
+    // Run immediately
+    checkContractStatus();
+    
+    // Also run every minute while app is open
+    setInterval(checkContractStatus, 60 * 1000);
 }

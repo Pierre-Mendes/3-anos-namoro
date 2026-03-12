@@ -1,10 +1,12 @@
 <template>
 
-    <div v-if="!isFinalDay">
+    <div v-if="!signed">
 
         <h2>🔒 Certificado bloqueado</h2>
 
-        <p>Volte no último dia para desbloquear.</p>
+        <p>Assine primeiro o contrato de renovação para liberar!</p>
+
+        <button @click="router.push({ name: 'contrato' })">Ir para Contratos 📜</button>
 
     </div>
 
@@ -14,14 +16,23 @@
 
 <script setup lang="ts">
 
+import { useRouter } from "vue-router"
 import RelationshipCertificate from "/src/components/RelationshipCertificate.vue"
 import { useRelationshipContract } from "/src/composables/useRelationshipContract"
 
-const { partnerName } = useRelationshipContract()
-
-const finalDate = new Date("2026-06-12")
-const today = new Date()
-
-const isFinalDay = today >= finalDate
+const router = useRouter()
+const { partnerName, signed } = useRelationshipContract()
 
 </script>
+
+<style scoped>
+button {
+    background: #ff4d6d;
+    border: none;
+    color: white;
+    padding: .7rem 1.2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+</style>

@@ -19,6 +19,9 @@
       <button class="primary" type="button" @click="goToChallenge">
         Começar desafio do dia
       </button>
+      <button class="secondary" type="button" @click="goToContract">
+        📜 Liberar Contrato
+      </button>
       <InstallApp />
     </div>
   </section>
@@ -43,6 +46,10 @@ const goToChallenge = () => {
   }
 
   router.push({ name: 'challenge' });
+};
+
+const goToContract = () => {
+  router.push({ name: 'contrato' });
 };
 </script>
 
@@ -106,6 +113,26 @@ h1 {
 .primary:active {
   transform: translateY(1px) scale(0.98);
   box-shadow: 0 10px 26px rgba(255, 77, 109, 0.6);
+}
+
+.secondary {
+  width: 100%;
+  border-radius: 999px;
+  border: none;
+  padding: 0.85rem 1rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #a2d2ff, #bde0fe);
+  color: #023e8a;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 18px 40px rgba(162, 210, 255, 0.7);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.secondary:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 10px 26px rgba(162, 210, 255, 0.6);
 }
 </style>
 
