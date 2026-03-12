@@ -16,13 +16,13 @@
       <div v-if="isOpen" class="content">
         <p class="headline">Agora a última surpresa...</p>
         <div class="card">
-          <p class="line">Sexta-feira</p>
-          <p class="line strong">17:30</p>
-          <p class="line">Vá até este endereço</p>
-          <p class="line soft">(confie em mim ❤️)</p>
+          <p class="line">Hoje (Quinta-feira) e amanhã Sexta-feira</p>
+          <p class="line strong">19:00h</p>
+          <p class="line">A Maria Eduarda (Madu) vai te levar a um lugar especial...</p>
+          <p class="line soft">(apenas confie em mim ❤️)</p>
           <div class="divider"></div>
-          <p class="line">19:30 esteja pronta</p>
-          <p class="line">eu vou te buscar</p>
+          <p class="line">Na sexta compartilhe sua localização comigo via WhatsApp. Chegando em casa tome banho, se arrume e se prepare!</p>
+          <p class="line">Eu vou te buscar na Sexta!</p>
         </div>
       </div>
     </transition>
